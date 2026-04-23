@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CloudVault - Secure Cloud Storage</title>
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="drive-icon.png">
+
+</head>
+
+<body>
+    <div class="navbar-fixed">
+        <nav class="white">
+            <div class="nav-wrapper white">
+                <ul>
+                    <li>
+                        <a href="#" class="title blue-text text-darken-2" style="font-weight: 700; font-size: 22px; letter-spacing: -0.5px; margin-left: 20px;">CloudVault</a>
+                    </li>
+                </ul>
+                <div class="search-wrapper">
+                    <i class="material-icons">search</i>
+                    <input type="search" id="search-input" name="search" placeholder="Search Drive" oninput="searchFiles(this.value)">
+                </div>
+                <ul class="right">
+                    <li>
+                        <a href="#" onclick="toggleView()" title="Toggle Grid/List View"><i class="material-icons grey-text text-darken-1" id="view-toggle-icon">view_module</i></a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="material-icons grey-text text-darken-1">info</i></a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="toggleDarkMode()" title="Toggle Dark Mode"><i class="material-icons grey-text text-darken-1" id="theme-icon">dark_mode</i></a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="material-icons grey-text text-darken-1">settings</i></a>
+                    </li>
+                    <li class="valign-wrapper" style="padding: 0 10px;">
+                        <span id="user-email" class="grey-text text-darken-1" style="font-size:13px;"></span>
+                    </li>
+                    <li>
+                        <a href="#" onclick="logout()" title="Logout"><i class="material-icons grey-text text-darken-1">exit_to_app</i></a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+    <ul class="side-nav fixed z-depth-0" id="sidebar-menu">
+        <li style="padding: 20px 16px;">
+            <!-- New Button with Dropdown -->
+            <a href="#" class="waves-effect waves-light btn btn-new white-text dropdown-trigger" data-target="new-dropdown" style="width: 120px; display: flex; align-items: center; justify-content: center;">
+                <i class="material-icons left">add</i>New
+            </a>
+            <!-- Dropdown Structure -->
+            <ul id="new-dropdown" class="dropdown-content">
+                <li><a href="#" onclick="document.getElementById('file-upload').click()"><i class="material-icons">insert_drive_file</i> File Upload</a></li>
+                <li class="divider"></li>
+                <li><a href="#" onclick="createFolder()"><i class="material-icons">create_new_folder</i> New Folder</a></li>
+            </ul>
+            <!-- Hidden file input -->
+            <input type="file" id="file-upload" style="display:none;" onchange="uploadFile(this.files[0])">
+        </li>
+        <li class="active" id="menu-drive"><a href="#" onclick="changeView('drive')"><i class="material-icons blue-text text-darken-1">dashboard</i>My Drive</a>
+        </li>
+
+        <li id="menu-recent">
+            <a href="#" onclick="changeView('recent')"><i class="material-icons">access_time</i>Recent</a>
+        </li>
+
+        <li id="menu-starred">
+            <a href="#" onclick="changeView('starred')"><i class="material-icons">star</i>Starred</a>
+        </li>
+        <li id="menu-trash">
+            <a href="#" onclick="changeView('trash')"><i class="material-icons">delete</i>Trash</a>
+        </li>
+        <li>
+            <div class="divider"></div>
+        </li>
+        <li>
+            <div class="storage-section">
+                <div class="storage-bar-track">
+                    <div class="storage-bar-fill" id="storage-bar"></div>
+                </div>
+                <span id="storage-label" class="storage-label">Calculating...</span>
+            </div>
+        </li>
+    </ul>
+    <div class="main">
+        <div class="container-fluid">
+            <!-- Breadcrumbs / Heading -->
+            <div id="breadcrumbs" style="padding: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                <a href="#" onclick="openFolder(null)" class="subheader" style="margin: 0; font-size: 18px; color: #202124; font-weight: 500;">My Drive</a>
+            </div>
+            <!-- Files will be loaded here dynamically from Appwrite -->
+            <div id="files-container">
+                <p class="grey-text center-align" style="padding:20px;">Loading files...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal">
+        <div class="modal-content">
+            <h4>Share File</h4>
+            <p id="share-file-name" class="grey-text"></p>
+            
+            <div class="input-field">
+                <i class="material-icons prefix">email</i>
+                <input type="email" id="share-email" placeholder="Enter friend's email">
+                <label for="share-email">Add people</label>
+            </div>
+            
+            <button class="btn blue darken-1 waves-effect" onclick="shareWithEmail()">Share</button>
+
+            <div class="divider" style="margin: 20px 0;"></div>
+            
+            <h5>Public Link</h5>
+            <p class="grey-text">Anyone with the link can view this file.</p>
+            <div style="display:flex; gap: 10px; align-items:center;">
+                <input type="text" id="public-link-url" readonly style="flex:1;">
+                <button class="btn-flat blue-text" id="copy-link-btn" onclick="copyPublicLink()">Copy Link</button>
+            </div>
+            <div class="switch" style="margin-top:10px;">
+                <label>
+                    Private
+                    <input type="checkbox" id="public-toggle" onchange="togglePublicStatus(this.checked)">
+                    <span class="lever"></span>
+                    Public
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close waves-effect btn-flat">Done</a>
+        </div>
+    </div>
+
+    <!-- Bulk Action Bar -->
+    <div id="bulk-bar" class="bulk-action-bar">
+        <span id="selected-count">0 selected</span>
+        <div class="action-btn" onclick="bulkStar(true)"><i class="material-icons">star</i>Star</div>
+        <div class="action-btn" onclick="bulkTrash(true)"><i class="material-icons">delete</i>Trash</div>
+        <div class="action-btn" onclick="clearSelection()"><i class="material-icons">close</i>Cancel</div>
+    </div>
+
+</body>
+<!-- Compiled and minified JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<!-- Appwrite SDK -->
+<script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
+<!-- Our custom scripts -->
+<script src="js/appwrite-config.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/storage.js"></script>
+</html>

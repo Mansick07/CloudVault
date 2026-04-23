@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudVault - Login</title>
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="drive-icon.png">
+</head>
+<body class="login-body">
+    <div style="position: absolute; top: 20px; right: 20px;">
+        <a href="#" onclick="toggleDarkMode()" title="Toggle Dark Mode" class="grey-text"><i class="material-icons" id="theme-icon">dark_mode</i></a>
+    </div>
+    <div class="login-container">
+        <div class="card login-card z-depth-1">
+            <div class="card-content center-align">
+                <img src="drive logo.png" alt="Drive Logo" class="login-logo">
+                <h5 class="login-title">CloudVault</h5>
+                <p class="login-subtitle">Sign in to continue</p>
+                
+                <form id="auth-form" class="left-align">
+                    <div class="input-field">
+                        <input id="email" type="email" class="validate" required>
+                        <label for="email">Email</label>
+                    </div>
+                    <div class="input-field">
+                        <input id="password" type="password" class="validate" required>
+                        <label for="password">Password</label>
+                    </div>
+                    
+                    <div class="login-actions">
+                        <a href="#" id="toggle-auth" class="blue-text text-darken-1 fw-500">Create account</a>
+                        <button class="btn blue darken-1 waves-effect waves-light" type="submit" id="auth-submit">Next</button>
+                    </div>
+                </form>
+            </div>
+            <div class="progress hide" id="auth-progress">
+                <div class="indeterminate blue"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appwrite SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
+    <!-- Materialize JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <!-- Custom JS -->
+    <script src="js/appwrite-config.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

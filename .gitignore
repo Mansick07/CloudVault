@@ -1,0 +1,19 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project specific
+node_modules/
+dist/
+build/
+.env
+
+# Appwrite local config (if any)
+appwrite.json
+.appwrite/

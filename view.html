@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Shared File - CloudVault</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body { background-color: #f1f3f4; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Roboto', sans-serif; }
+        .view-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); text-align: center; max-width: 500px; width: 90%; }
+        .file-icon { font-size: 80px; color: #4285f4; margin-bottom: 20px; }
+        .file-name { font-size: 24px; font-weight: 500; color: #202124; margin-bottom: 10px; }
+        .file-info { color: #5f6368; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <div class="view-card" id="content">
+        <div class="preloader-wrapper active">
+            <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left"><div class="circle"></div></div>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right"><div class="circle"></div></div>
+            </div>
+        </div>
+        <p>Loading file...</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
+    <script src="js/appwrite-config.js"></script>
+    <script>
+        async function loadSharedFile() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fileId = urlParams.get('id');
+            const container = document.getElementById('content');
+
+            if (!fileId) {
+                container.innerHTML = `<h4>Invalid Link</h4><p>No file ID provided.</p>`;
+                return;
+            }
+
+            try {
+                // Fetch file metadata (public permission should be set in Appwrite for this to work perfectly)
+                const doc = await databases.getDocument(appwriteConfig.databaseId, appwriteConfig.collectionId, fileId);
+                
+                if (!doc.isPublic) {
+                    container.innerHTML = `<i class="material-icons red-text" style="font-size:64px;">lock</i><h4>Private File</h4><p>This file is not shared publicly.</p>`;
+                    return;
+                }
+
+                const downloadUrl = storage.getFileDownload(appwriteConfig.bucketId, doc.fileID);
+                const sizeMB = (doc.size / (1024 * 1024)).toFixed(2);
+
+                container.innerHTML = `
+                    <i class="material-icons file-icon">insert_drive_file</i>
+                    <div class="file-name">${doc.name}</div>
+                    <div class="file-info">${sizeMB} MB • Shared via CloudVault</div>
+                    <a href="${downloadUrl}" class="btn blue darken-1 waves-effect waves-light">
+                        <i class="material-icons left">file_download</i> Download File
+                    </a>
+                    <p style="margin-top:20px;"><a href="login.html" class="grey-text">Sign in to CloudVault</a></p>
+                `;
+            } catch (error) {
+                container.innerHTML = `<h4>Access Denied</h4><p>You don't have permission to view this file or it doesn't exist.</p>`;
+            }
+        }
+        loadSharedFile();
+    </script>
+</body>
+</html>
