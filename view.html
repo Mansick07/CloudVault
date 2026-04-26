@@ -49,6 +49,11 @@
                     return;
                 }
 
+                if (doc.expiresAt && new Date(doc.expiresAt) < new Date()) {
+                    container.innerHTML = `<i class="material-icons orange-text" style="font-size:64px;">timer_off</i><h4>Link Expired</h4><p>The shared link for this file has expired.</p>`;
+                    return;
+                }
+
                 const downloadUrl = storage.getFileDownload(appwriteConfig.bucketId, doc.fileID);
                 const sizeMB = (doc.size / (1024 * 1024)).toFixed(2);
 

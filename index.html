@@ -29,6 +29,17 @@
                 </div>
                 <ul class="right">
                     <li>
+                        <a href="#" class="dropdown-trigger" data-target="sort-dropdown" title="Sort Files"><i class="material-icons grey-text text-darken-1">sort</i></a>
+                        <ul id="sort-dropdown" class="dropdown-content">
+                            <li><a href="#" onclick="changeSort('date-desc')">Newest First</a></li>
+                            <li><a href="#" onclick="changeSort('date-asc')">Oldest First</a></li>
+                            <li><a href="#" onclick="changeSort('name-asc')">Name (A-Z)</a></li>
+                            <li><a href="#" onclick="changeSort('name-desc')">Name (Z-A)</a></li>
+                            <li><a href="#" onclick="changeSort('size-desc')">Size (Largest)</a></li>
+                            <li><a href="#" onclick="changeSort('size-asc')">Size (Smallest)</a></li>
+                        </ul>
+                    </li>
+                    <li>
                         <a href="#" onclick="toggleView()" title="Toggle Grid/List View"><i class="material-icons grey-text text-darken-1" id="view-toggle-icon">view_module</i></a>
                     </li>
                     <li>
@@ -71,9 +82,14 @@
         <li id="menu-recent">
             <a href="#" onclick="changeView('recent')"><i class="material-icons">access_time</i>Recent</a>
         </li>
-
+        <li id="menu-shared">
+            <a href="#" onclick="changeView('shared')"><i class="material-icons">people</i>Shared with me</a>
+        </li>
         <li id="menu-starred">
             <a href="#" onclick="changeView('starred')"><i class="material-icons">star</i>Starred</a>
+        </li>
+        <li id="menu-archive">
+            <a href="#" onclick="changeView('archive')"><i class="material-icons">archive</i>Archive</a>
         </li>
         <li id="menu-trash">
             <a href="#" onclick="changeView('trash')"><i class="material-icons">delete</i>Trash</a>
@@ -87,6 +103,9 @@
                     <div class="storage-bar-fill" id="storage-bar"></div>
                 </div>
                 <span id="storage-label" class="storage-label">Calculating...</span>
+            </div>
+            <div style="padding: 0 16px 20px 16px;">
+                <a href="#" class="btn-flat grey-text text-darken-2" onclick="backupDrive()" style="width: 100%; text-transform: none; border: 1px solid #dadce0; border-radius: 4px; display: flex; align-items: center; justify-content: center;"><i class="material-icons left">cloud_download</i>Backup Drive</a>
             </div>
         </li>
     </ul>
@@ -133,18 +152,82 @@
                     Public
                 </label>
             </div>
+            <div class="input-field" style="margin-top: 20px;">
+                <input type="date" id="share-expiration" onchange="updateExpirationDate()">
+                <label for="share-expiration" class="active">Link Expiration Date (Optional)</label>
+            </div>
         </div>
         <div class="modal-footer">
             <a href="#!" class="modal-close waves-effect btn-flat">Done</a>
         </div>
     </div>
 
+    <!-- Move Modal -->
+    <div id="move-modal" class="modal">
+        <div class="modal-content">
+            <h4>Move to</h4>
+            <p id="move-modal-text" class="grey-text">Select destination:</p>
+            <div id="move-folder-list" class="collection" style="max-height: 300px; overflow-y: auto;">
+                <!-- Folders injected here -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close waves-effect btn-flat">Cancel</a>
+            <a href="#!" class="waves-effect btn blue white-text" id="confirm-move-btn" onclick="confirmMove()">Move Here</a>
+        </div>
+    </div>
+
     <!-- Bulk Action Bar -->
     <div id="bulk-bar" class="bulk-action-bar">
         <span id="selected-count">0 selected</span>
+        <div class="action-btn" onclick="downloadAsZip()"><i class="material-icons">folder_zip</i>ZIP</div>
+        <div class="action-btn" onclick="openMoveModal(null, null, true)"><i class="material-icons">drive_file_move</i>Move</div>
+        <div class="action-btn" onclick="bulkArchive(true)"><i class="material-icons">archive</i>Archive</div>
         <div class="action-btn" onclick="bulkStar(true)"><i class="material-icons">star</i>Star</div>
         <div class="action-btn" onclick="bulkTrash(true)"><i class="material-icons">delete</i>Trash</div>
         <div class="action-btn" onclick="clearSelection()"><i class="material-icons">close</i>Cancel</div>
+    </div>
+
+    <!-- Folder Color Modal -->
+    <div id="color-modal" class="modal bottom-sheet">
+        <div class="modal-content center-align">
+            <h4>Choose Folder Color</h4>
+            <div id="color-palette" style="display:flex; justify-content:center; gap:15px; margin-top:20px;">
+                <div class="color-swatch" style="background:#ffc107; width:40px; height:40px; border-radius:50%; cursor:pointer;" onclick="changeFolderColor('#ffc107')"></div>
+                <div class="color-swatch" style="background:#ea4335; width:40px; height:40px; border-radius:50%; cursor:pointer;" onclick="changeFolderColor('#ea4335')"></div>
+                <div class="color-swatch" style="background:#34a853; width:40px; height:40px; border-radius:50%; cursor:pointer;" onclick="changeFolderColor('#34a853')"></div>
+                <div class="color-swatch" style="background:#4285f4; width:40px; height:40px; border-radius:50%; cursor:pointer;" onclick="changeFolderColor('#4285f4')"></div>
+                <div class="color-swatch" style="background:#fbbc04; width:40px; height:40px; border-radius:50%; cursor:pointer;" onclick="changeFolderColor('#fbbc04')"></div>
+                <div class="color-swatch" style="background:#8e24aa; width:40px; height:40px; border-radius:50%; cursor:pointer;" onclick="changeFolderColor('#8e24aa')"></div>
+                <div class="color-swatch" style="background:#5f6368; width:40px; height:40px; border-radius:50%; cursor:pointer;" onclick="changeFolderColor('#5f6368')"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="preview-modal" class="modal" style="width: 90%; max-height: 90%; height: 90%; background: #202124;">
+        <div class="modal-content" style="padding: 0; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
+            <a href="#!" class="modal-close right" style="position: absolute; top: 15px; right: 15px; z-index: 10;"><i class="material-icons white-text" style="font-size:32px;">close</i></a>
+            <div id="preview-container" style="width: 100%; height: 100%; display:flex; justify-content:center; align-items:center;">
+                <!-- Preview injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Progress -->
+    <div id="upload-progress-card" class="card" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 350px; z-index: 9999; margin: 0; border-radius: 8px;">
+        <div class="card-content" style="padding: 15px;">
+            <span class="card-title" style="font-size: 16px; margin-bottom: 10px;" id="upload-progress-text">Uploading...</span>
+            <div class="progress" style="margin: 0; background-color: #e0e0e0;">
+                <div class="determinate blue" id="upload-progress-bar" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drag & Drop Overlay -->
+    <div id="drag-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(66, 133, 244, 0.9); z-index:10000; justify-content:center; align-items:center; color:white; font-size:32px; font-weight:bold; flex-direction:column;">
+        <i class="material-icons" style="font-size:80px; margin-bottom:20px;">cloud_upload</i>
+        Drop files here to upload
     </div>
 
 </body>
@@ -152,6 +235,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <!-- Appwrite SDK -->
 <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
+<!-- ZIP Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <!-- Our custom scripts -->
 <script src="js/appwrite-config.js"></script>
 <script src="js/theme.js"></script>
